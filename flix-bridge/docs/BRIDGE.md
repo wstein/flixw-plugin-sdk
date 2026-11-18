@@ -8,9 +8,10 @@ data. Package `dev.flixw.sdk.bridge`; depends on `kit`; contains no compiler cod
 `flix-bridge/resources/dev/flixw/sdk/bridge/versions.json` is the one place a release is named: version,
 SHA-256 of the compiler jar, status (`verified` or `rejected`), adapter family and test fixture;
 per family its adapter class, the oldest release it is compiled against (`floor`), the release its
-test runs against (`testVersion`) and its capabilities. The top-level `pin` (optional for `VersionData`, required in the packaged file by `scripts/check-layout.sh`) names the
-release a consumer keeps as its calibration and test compiler (`VersionData.pin()`); it must be a
-verified release and does not depend on the order of the families. Everything else derives from it:
+test runs against (`testVersion`) and its capabilities. The top-level `pin` (optional for
+`VersionData`, required in the packaged file by `scripts/check-layout.sh`) names the release a
+consumer keeps as its calibration and test compiler (`VersionData.pin()`); it must be a verified
+release and does not depend on the order of the families. Everything else derives from it:
 
 - `VersionData` gives the verified list, the single warning line for an unverified compiler and
   the Flix version (`FLIXW_COMPILER_VERSION`, else the jar file name).
