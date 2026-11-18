@@ -33,8 +33,8 @@ pass.
 | 0.76.0 | `Flix0753Adapter` | yes | yes | yes | yes | 9 active targets; 2 upstream-incompatible | [investigation](flix-0.76.0.md) |
 | 0.76.1 | `Flix0761Adapter` | yes | yes | yes | yes | exact parity on 9 active targets | [investigation](flix-0.76.1.md) |
 | 0.77.0 | `Flix0761Adapter` | yes | yes | yes | yes | exact parity on 9 active targets | [investigation](flix-0.77.0.md) |
-| 0.78.0 | `Flix0761Adapter` | no | yes | yes | yes | exact parity on 9 active targets via `corpus-0.78.json` (4 projects rewritten), except Prelude 232 lines ([calibration](../CALIBRATION.md#corpus-variant-for-flix-078-and-later)) | [investigation](flix-0.78.0.md) |
-| 0.79.0 | `Flix0761Adapter` | no | yes | yes | yes | 2026-11-09: 9 targets / 1,349 findings; 8 complete JSON, cross-release baseline and SARIF comparisons; Prelude 232 lines ([snapshot](../CALIBRATION.md#flix-0790-calibration-snapshot-2026-11-09)) | [investigation](flix-0.79.0.md) |
+| 0.78.0 | `Flix0761Adapter` | no | yes | yes | yes | exact parity on 9 active targets via `corpus-0.78.json` (4 projects rewritten), except Prelude 232 lines ([calibration](https://github.com/wstein/flixw-metrics/blob/main/docs/CALIBRATION.md#corpus-variant-for-flix-078-and-later)) | [investigation](flix-0.78.0.md) |
+| 0.79.0 | `Flix0761Adapter` | no | yes | yes | yes | 2026-11-09: 9 targets / 1,349 findings; 8 complete JSON, cross-release baseline and SARIF comparisons; Prelude 232 lines ([snapshot](https://github.com/wstein/flixw-metrics/blob/main/docs/CALIBRATION.md#flix-0790-calibration-snapshot-2026-11-09)) | [investigation](flix-0.79.0.md) |
 | 0.80.0 | `Flix0800Adapter` | yes | yes | yes | not run (SDK package check only) | not run | [investigation](flix-0.80.0.md) |
 
 Declaration positions: from 0.79.0 (not 0.78.0), the compiler starts a documented definition or
@@ -48,8 +48,9 @@ Flix 0.80.0 starts the `Flix0800Adapter` family. `FormatType` is gone (`Pretty.t
 renders a type) and `Lexer.lex` returns `SourceTokens` with an unchanged erased descriptor, which
 the ABI gate does not report ([record](flix-0.80.0.md)). 0.80.0 is verified by the definition
 above. Its packaged integration checkpoint, corpus and span comparison have not been run (the
-Integration and Corpus columns say "not run"); the checkpoint follows with the flixw-metrics
-change that pins this SDK.
+Integration and Corpus columns say "not run"). `scripts/test-compiler-compatibility.sh` in
+flixw-metrics fails for a verified release without a checkpoint, so the flixw-metrics change that
+pins this SDK must add the 0.80.0 checkpoint.
 
 ## What the test suite runs per release
 
@@ -72,7 +73,7 @@ semantic fixture, which runs against one jar per family, not against every relea
 | 0.76.1 | `Flix0761Adapter` | yes | no | yes | no | no |
 | 0.77.0 | `Flix0761Adapter` | yes | `Flix0761AdapterTest` and `PluginIntegrationTest` (the 0.77.0 pin in `plugin/lib/flix.jar`) | yes | no | yes, the only compiler of the `calibration` workflow (`corpus.json`) |
 | 0.78.0 | `Flix0761Adapter` | yes | no | yes | yes | no; measured by hand on the `corpus-0.78.json` variant, which neither the suite nor CI measures (`test-calibration.sh` checks only its manifest and rewrite) |
-| 0.79.0 | `Flix0761Adapter` | yes | no | yes | yes | no automatic corpus run; complete manual 2026-11-09 snapshot on `corpus-0.78.json`, including eight cross-release JSON/baseline and SARIF checks ([evidence](../CALIBRATION.md#flix-0790-calibration-snapshot-2026-11-09)) |
+| 0.79.0 | `Flix0761Adapter` | yes | no | yes | yes | no automatic corpus run; complete manual 2026-11-09 snapshot on `corpus-0.78.json`, including eight cross-release JSON/baseline and SARIF checks ([evidence](https://github.com/wstein/flixw-metrics/blob/main/docs/CALIBRATION.md#flix-0790-calibration-snapshot-2026-11-09)) |
 | 0.80.0 | `Flix0800Adapter` | no | `Flix0800AdapterTest` (0.80.0) | no | no | no |
 
 The same script also requires 0.59.0 and 0.66.0 to be refused (not in the table: they are not
@@ -99,7 +100,7 @@ definition and effect positions and the findings that depend on them, the span c
 "473 checks" in the 0.78.0 and 0.79.0 records come from a manual run with `plugin/lib/flix.jar`
 swapped; that run is not reproduced by the suite and was not repeated for this table. A Flix
 release newer than 0.80.0 is loaded if it links, with one stderr warning that it has no checkpoint
-(see [COMPILER-SDK.md](../COMPILER-SDK.md#other-compilers)).
+(see [COMPILER-SDK.md](https://github.com/wstein/flixw-metrics/blob/main/docs/COMPILER-SDK.md#other-compilers)).
 
 The adapter-family suffix names its oldest compatible release. It never encodes an upper bound:
 the upper end is evidence that grows release by release, not part of the JVM package name. The
@@ -107,17 +108,21 @@ plugin itself retains an independent SemVer because its reporting behavior evolv
 
 `scripts/test-compiler-compatibility.sh` enforces the current lower boundary with official release
 artifacts: 0.59.0 must fail the AST gate and 0.66.0 must fail compiler-runtime inspection, while
-every release that has an integration checkpoint there (the "yes" rows of the Integration column)
-must pass it. The checkpoint is recorded, not required, for `versions.json`: a release without one
-is verified by the definition above and its Integration column says "not run". Intermediate
+every checkpoint there must pass. The definition of Verified above does not require the
+integration checkpoint, but that script does: it reads `versions.json` through `sdk-versions.sh
+verified` and fails when a verified release has no `integration "$lib/flix-<version>.jar"` line, or
+a checkpoint names a release that is not verified. A release verified here without a checkpoint
+there has "not run" in the Integration column until the metrics repository adds one. Intermediate
 releases may satisfy the structural gate, but remain unverified until they have their own row in
 `versions.json` and an investigation record.
 
 For a new release, copy [the template](template.md), complete every applicable check, add the
 release and, if needed, its family to `versions.json` (`scripts/check-layout.sh` compares the first
-table with it), update this matrix, and link the record from the compiler-repin pull request. The
-metrics repository keeps its own list (`plugin/resources/dev/flixw/metrics/verified-flix-versions.txt`)
-and the integration checkpoint with its `fetch` line in `scripts/test-compiler-compatibility.sh`;
-that script fails if the two disagree. Keep measurement distributions
-and threshold decisions in [`docs/CALIBRATION.md`](../CALIBRATION.md); this directory answers the
+table with it), update this matrix, and link the record from the compiler-repin pull request. In
+`wstein/flixw-metrics` the pin change then adds one `integration "$lib/flix-<version>.jar"` line to
+`scripts/test-compiler-compatibility.sh`; `scripts/fetch-flix.sh all` takes the release and its
+digest from `versions.json`, and `scripts/check-flix-release.sh` reads the same file. Keep
+measurement distributions and threshold decisions in
+[`docs/CALIBRATION.md`](https://github.com/wstein/flixw-metrics/blob/main/docs/CALIBRATION.md);
+this directory answers the
 different question of whether a compiler release can be loaded and interpreted correctly.
