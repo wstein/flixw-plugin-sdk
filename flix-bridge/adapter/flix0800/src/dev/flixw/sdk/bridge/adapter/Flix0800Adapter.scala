@@ -7,7 +7,7 @@ import dev.flixw.sdk.bridge.CompilerModel.{DefInfo, EffectInfo, EffectOperationI
 
 import ca.uwaterloo.flix.api.{Bootstrap, Flix}
 import ca.uwaterloo.flix.language.ast.shared.{Doc, Origin, Source}
-import ca.uwaterloo.flix.language.fmt.FormatType
+import ca.uwaterloo.flix.language.fmt.Pretty
 import ca.uwaterloo.flix.language.phase.Lexer
 import ca.uwaterloo.flix.language.ast.{Kind, SourceLocation, Symbol, Type, TypeConstructor, TypedAst}
 import ca.uwaterloo.flix.util.{Formatter, Options}
@@ -20,7 +20,7 @@ import scala.jdk.CollectionConverters._
  *
  * ==Why this file is Scala==
  *
- * `Flix0800` names the linkage family introduced by Flix 0.76.1. Typed Scala patterns make
+ * `Flix0800` names the linkage family introduced by Flix 0.80.0. Typed Scala patterns make
  * misspelled or removed nodes a build failure, while semantic fixtures cover the deliberately
  * open classifier and its generic descent. The reflective predecessor classified nodes by simple
  * class name and ignored
@@ -140,7 +140,9 @@ final class Flix0800Adapter extends CompilerModel {
     val trailing = scala.collection.mutable.Map.empty[(Int, Int), Int]
     var lastCodeEnd = (0, 0)
     var sawDoc = false
-    val (tokens, _) = Lexer.lex(src)
+    // Since 0.80.0 `Lexer.lex` returns `SourceTokens`; the erased descriptor is unchanged, so the ABI gate cannot see it.
+    val (sourceTokens, _) = Lexer.lex(src)
+    val tokens = sourceTokens.tokens
     tokens.foreach { t =>
       if (t.kind != ca.uwaterloo.flix.language.ast.TokenKind.Eof) {
         if (!t.kind.isComment) {
@@ -322,7 +324,7 @@ final class Flix0800Adapter extends CompilerModel {
       case Type.Cst(TypeConstructor.Effect(sym, _), _) => (sym.name, Nil) :: Nil
       case app: Type.Apply if app.kind == Kind.Eff => app.baseType match {
         case Type.Cst(TypeConstructor.Effect(sym, _), _) =>
-          (sym.name, app.typeArguments.map(FormatType.formatType(_))) :: Nil
+          (sym.name, app.typeArguments.map(Pretty.tpe(_).plain)) :: Nil
         case _ => visit(app.tpe1) ::: visit(app.tpe2)
       }
       case app: Type.Apply => visit(app.tpe1) ::: visit(app.tpe2)
@@ -361,7 +363,7 @@ final class Flix0800Adapter extends CompilerModel {
   private def flixdocParameterCharacters(fparams: List[TypedAst.FormalParam])
                                         (implicit flix: Flix): Int = {
     val rendered = sourceFormalParams(fparams).map { p =>
-      val label = s"${p.bnd.sym.text}: ${FormatType.formatType(p.tpe)}"
+      val label = s"${p.bnd.sym.text}: ${Pretty.tpe(p.tpe).plain}"
       label.codePointCount(0, label.length)
     }
     if (rendered.isEmpty) 0 else 2 + rendered.sum + 2 * (rendered.length - 1)
@@ -369,7 +371,7 @@ final class Flix0800Adapter extends CompilerModel {
 
   /** Unicode width of the result type FlixDoc renders after the formal-parameter span. */
   private def renderedCharacters(tpe: Type)(implicit flix: Flix): Int = {
-    val rendered = FormatType.formatType(tpe)
+    val rendered = Pretty.tpe(tpe).plain
     rendered.codePointCount(0, rendered.length)
   }
 
