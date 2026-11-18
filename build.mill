@@ -61,6 +61,9 @@ object `flix-bridge` extends JavaModule {
   /** Compiler-facing modules, grouped under one adapter boundary. */
   object adapter extends Module {
     /** The current adapter. */
+    object flix0800 extends FlixAdapter { def family = "flix0800" }
+
+    /** The pre-0.80 adapter. */
     object flix0761 extends FlixAdapter { def family = "flix0761" }
 
     /** The outgoing adapter. */
@@ -82,7 +85,7 @@ object `flix-bridge` extends JavaModule {
     object flix0600 extends FlixAdapter { def family = "flix0600" }
 
     /** Every adapter, newest first. */
-    def all: Seq[FlixAdapter] = Seq(flix0761, flix0753, flix0680, flix0672, flix0661, flix0610, flix0600)
+    def all: Seq[FlixAdapter] = Seq(flix0800, flix0761, flix0753, flix0680, flix0672, flix0661, flix0610, flix0600)
   }
 
   /** Package every adapter family, but none of the compiler jars used to compile them. */
@@ -138,7 +141,7 @@ object `flix-bridge` extends JavaModule {
       val abiJars = jar(families.head("testVersion").str) +: families.tail.map(f => jar(f("floor").str)).toSeq
       run(cp, "CompilerCapabilitiesTest", abiJars)
       run(cp, "ConformanceTest", "rejected", `flix-bridge`.moduleDir / "lib")
-      // The bridge in a child loader that sees 0.79.0, while the system class path sees only 0.60.0.
+      // The bridge in a child loader that sees the newest testVersion, while the system class path sees only 0.60.0.
       val newest = families.head("testVersion").str
       val oldest = families.last("floor").str
       run(testClasses.toString + java.io.File.pathSeparator + jar(oldest), "ChildLoaderTest",
