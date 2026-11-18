@@ -38,6 +38,11 @@ public final class VersionDataTest {
                 && data.family("flix0800").orElseThrow().floor().equals("0.80.0")
                 && data.family("flix0800").orElseThrow().testVersion().equals("0.80.0"),
             "flix0800 starts at 0.80.0 and is tested against it");
+        require(data.pin().equals(Optional.of("0.77.0"))
+                && !data.pin().equals(Optional.of(data.families().get(0).testVersion())),
+            "the pin is its own field: 0.77.0, not the test release of the first family");
+        require(data.release(data.pin().orElseThrow()).orElseThrow().status().equals("verified"),
+            "the pin is a verified release");
         require(data.releasesOf("flix0661").stream().map(VersionData.Release::version).toList()
                 .equals(List.of("0.66.1", "0.67.1")), "releases of a family are listed oldest first");
 
@@ -116,8 +121,28 @@ public final class VersionDataTest {
             + " \"testVersion\": \"0.60.0\", \"capabilities\": [\"metrics\"]}";
         rejects(minimal(verified).replace("}], \"releases\"", "}, " + family + "], \"releases\""),
             "duplicate family");
-        require(VersionData.parse(minimal("\"status\": \"verified\", \"family\": \"f\"")).verified()
+        require(VersionData.parse(minimal(verified)).verified()
             .equals(List.of("0.60.0")), "the minimal document is accepted");
+        require(VersionData.parse(minimal(verified)).pin().isEmpty(), "a document without a pin is read and has none");
+        require(VersionData.parse(withPin(verified, "\"0.60.0\"")).pin().equals(Optional.of("0.60.0")),
+            "a pin that names a verified release is read");
+        rejects(withPin(verified, "\"0.61.0\""), "pin names a release that is not listed");
+        rejects(withPin(verified, "\"0.6\""), "pin is not a version");
+        rejects(withPin(verified, "0"), "pin is not a string");
+        rejects(withPin(verified, "\"\""), "pin is empty");
+        String rejected = "{\"version\": \"0.59.0\", \"sha256\": \"" + "1".repeat(64)
+            + "\", \"status\": \"rejected\", \"rejection\": \"X\"}";
+        rejects(withPin(verified, "\"0.59.0\"").replace("\"releases\": [", "\"releases\": [" + rejected + ", "),
+            "pin names a rejected release");
+        String newer = "{\"id\": \"g\", \"adapter\": \"a.C\", \"floor\": \"0.61.0\","
+            + " \"testVersion\": \"0.61.0\", \"capabilities\": [\"metrics\"]}";
+        String later = "{\"version\": \"0.61.0\", \"sha256\": \"" + "2".repeat(64)
+            + "\", \"status\": \"verified\", \"family\": \"g\"}";
+        String two = withPin(verified, "\"0.60.0\"").replace("\"families\": [", "\"families\": [" + newer + ", ")
+            .replace("}]}", "}, " + later + "]}");
+        require(VersionData.parse(two).families().get(0).id().equals("g")
+                && VersionData.parse(two).pin().equals(Optional.of("0.60.0")),
+            "the pin does not follow the order of the families");
         System.out.println("VersionDataTest: " + passed + " passed, 0 failed");
     }
 
@@ -129,6 +154,10 @@ public final class VersionDataTest {
         return "{\"schema\": 1, \"families\": [{\"id\": \"f\", \"adapter\": \"a.B\", \"floor\": \"0.60.0\","
             + " \"testVersion\": \"0.60.0\", \"capabilities\": [\"metrics\"]}], \"releases\": [{\"version\": \"0.60.0\","
             + " \"sha256\": \"" + hex() + "\", " + release + "}]}";
+    }
+
+    private static String withPin(String release, String pin) {
+        return minimal(release).replace("{\"schema\": 1, ", "{\"schema\": 1, \"pin\": " + pin + ", ");
     }
 
     private static void rejects(String document, String reason) {
