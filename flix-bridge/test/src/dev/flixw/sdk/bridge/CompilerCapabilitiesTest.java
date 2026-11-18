@@ -28,7 +28,7 @@ public final class CompilerCapabilitiesTest {
             require(AdapterAbi.contracts().stream().anyMatch(contract -> noApi.missing().containsAll(
                 contract.references().stream().map(AdapterAbi.Reference::display).toList())),
                 "the capability gate reports every reference in its closest adapter contract");
-            require(AdapterAbi.contracts().size() == 7,
+            require(AdapterAbi.contracts().size() == 8,
                 "the capability gate derives a separate contract for each adapter");
             require(linked.stream().anyMatch(r -> r.contains("formatType$default$2:()")),
                 "the bytecode contract includes Scala default-argument accessors");

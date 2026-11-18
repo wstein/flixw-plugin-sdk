@@ -14,40 +14,46 @@ public final class VersionDataTest {
     public static void main(String[] args) {
         VersionData data = VersionData.load();
         require(data.verified().equals(List.of("0.60.0", "0.61.0", "0.65.0", "0.66.1", "0.67.1", "0.67.2",
-                "0.68.0", "0.75.2", "0.75.3", "0.76.0", "0.76.1", "0.77.0", "0.78.0", "0.79.0")),
-            "the data file lists the fourteen verified releases, oldest first");
-        require(data.verified().size() == 14, "fourteen verified releases");
+                "0.68.0", "0.75.2", "0.75.3", "0.76.0", "0.76.1", "0.77.0", "0.78.0", "0.79.0", "0.80.0")),
+            "the data file lists the fifteen verified releases, oldest first");
+        require(data.verified().size() == 15, "fifteen verified releases");
         require(!data.verified().contains("0.59.0") && !data.verified().contains("0.66.0"),
             "the rejected releases are not verified");
         require(data.release("0.59.0").orElseThrow().rejection().equals("Symbol$EffSym")
                 && data.release("0.66.0").orElseThrow().rejection().equals("dev.flix.runtime.Global"),
             "a rejected release names the reference its jar lacks");
         require(data.families().stream().map(VersionData.Family::id).toList().equals(
-                List.of("flix0761", "flix0753", "flix0680", "flix0672", "flix0661", "flix0610", "flix0600")),
-            "seven families, newest first");
-        require(data.releases().stream().map(VersionData.Release::sha256).distinct().count() == 16
+                List.of("flix0800", "flix0761", "flix0753", "flix0680", "flix0672", "flix0661", "flix0610", "flix0600")),
+            "eight families, newest first");
+        require(data.releases().stream().map(VersionData.Release::sha256).distinct().count() == 17
                 && data.releases().stream().allMatch(r -> r.sha256().matches("[0-9a-f]{64}")),
             "every release has its own SHA-256 digest");
         require(data.family("flix0761").orElseThrow().adapter().equals("dev.flixw.sdk.bridge.adapter.Flix0761Adapter")
                 && data.family("flix0761").orElseThrow().capabilities().equals(List.of("metrics")),
             "a family names its adapter class and capabilities");
-        require(data.release("0.79.0").orElseThrow().family().equals("flix0761"),
-            "a verified release names its family");
+        require(data.release("0.79.0").orElseThrow().family().equals("flix0761")
+                && data.release("0.80.0").orElseThrow().family().equals("flix0800"),
+            "a verified release names its family; 0.79.0 stays in flix0761");
+        require(data.family("flix0800").orElseThrow().adapter().equals("dev.flixw.sdk.bridge.adapter.Flix0800Adapter")
+                && data.family("flix0800").orElseThrow().floor().equals("0.80.0")
+                && data.family("flix0800").orElseThrow().testVersion().equals("0.80.0"),
+            "flix0800 starts at 0.80.0 and is tested against it");
         require(data.releasesOf("flix0661").stream().map(VersionData.Release::version).toList()
                 .equals(List.of("0.66.1", "0.67.1")), "releases of a family are listed oldest first");
 
         require(data.warning("metrics", Path.of("/cache/compilers",
                 "flix-0.79.0-8fad2aa09567a7edabcc43f4101fa6199131df2c22929e001c87659d764f6dcf.jar")).isEmpty(),
             "a verified release in flixw's cache naming gets no notice");
-        require(data.warning("metrics", Path.of("/cache/compilers/flix-0.77.0.jar")).isEmpty(),
+        require(data.warning("metrics", Path.of("/cache/compilers/flix-0.77.0.jar")).isEmpty()
+                && data.warning("metrics", Path.of("/cache/compilers/flix-0.80.0.jar")).isEmpty(),
             "a verified release by plain name gets no notice");
-        String unknown = data.warning("metrics", Path.of("/cache/compilers/flix-0.80.0-abcdef0123.jar")).orElseThrow();
+        String unknown = data.warning("metrics", Path.of("/cache/compilers/flix-0.81.0-abcdef0123.jar")).orElseThrow();
         require(unknown.startsWith("metrics: warning: ") && unknown.indexOf('\n') < 0,
             "the notice is a single warning line led by the plugin name");
-        require(unknown.contains("0.80.0") && unknown.contains("newest verified: 0.79.0")
+        require(unknown.contains("0.81.0") && unknown.contains("newest verified: 0.80.0")
                 && unknown.contains("flix-bridge/docs/compatibility"),
             "the notice names the release, the newest verified one and the compatibility records");
-        require(data.warning("metrics", Path.of("/cache/compilers/flix-0.80.0.jar")).orElseThrow()
+        require(data.warning("metrics", Path.of("/cache/compilers/flix-0.81.0.jar")).orElseThrow()
                 .equals(unknown.replace("-abcdef0123", "")), "the cache suffix does not change the notice");
         require(VersionData.newest(List.of("0.9.0", "0.10.0", "0.2.5")).equals("0.10.0"),
             "the newest release is chosen numerically, not as text");
@@ -77,9 +83,10 @@ public final class VersionDataTest {
                 .equals(Optional.of("0.60.0")), "without the variable the jar name is the fallback");
         require(VersionData.flixVersion(Map.of("FLIXW_COMPILER_VERSION", " "), Path.of("/c/flix.jar")).isEmpty(),
             "a blank variable and an unreadable name give no version");
-        require(data.warningFor("metrics", "0.79.0").isEmpty() && data.warningFor("metrics", "0.80.0").isPresent(),
+        require(data.warningFor("metrics", "0.80.0").isEmpty() && data.warningFor("metrics", "0.81.0").isPresent(),
             "a notice can be derived from the version alone");
-        require(data.cacheFields("flix0761").equals(Map.of("sdkVersion", "1", "adapterFamily", "flix0761")),
+        require(data.cacheFields("flix0761").equals(Map.of("sdkVersion", "1", "adapterFamily", "flix0761"))
+                && data.cacheFields("flix0800").equals(Map.of("sdkVersion", "1", "adapterFamily", "flix0800")),
             "SDK version and adapter family are explicit cache fields");
 
         require(CompilerModel.CAPABILITY == Capability.METRICS && Capability.of("metrics").orElseThrow() == Capability.METRICS
