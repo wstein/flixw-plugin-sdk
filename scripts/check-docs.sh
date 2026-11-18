@@ -16,4 +16,4 @@ if [ -n "$problems" ]; then
   echo "check-docs: documentation warnings" >&2
   exit 1
 fi
-echo "check-docs: ok (kit, flix-bridge, 7 adapter modules)"
+echo "check-docs: ok (kit, flix-bridge, 8 adapter modules)"

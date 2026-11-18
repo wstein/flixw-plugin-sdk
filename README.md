@@ -5,7 +5,7 @@ Each plugin is one JAR and embeds a fixed SDK version; plugins do not depend on 
 
 ## Status
 
-The Java 21 `kit` module and the `flix-bridge` module (seven adapter families, ABI driver,
+The Java 21 `kit` module and the `flix-bridge` module (eight adapter families, ABI driver,
 `versions.json`) are available as source. Capability selection and skipped-adapter headers follow in
 [flixw-metrics#23](https://github.com/wstein/flixw-metrics/issues/23). No release asset exists yet.
 

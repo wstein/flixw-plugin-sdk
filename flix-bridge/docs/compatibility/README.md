@@ -34,6 +34,7 @@ tables below record; a column that says "no" or "not rerun" is a gap, not a pass
 | 0.77.0 | `Flix0761Adapter` | yes | yes | yes | yes | exact parity on 9 active targets | [investigation](flix-0.77.0.md) |
 | 0.78.0 | `Flix0761Adapter` | no | yes | yes | yes | exact parity on 9 active targets via `corpus-0.78.json` (4 projects rewritten), except Prelude 232 lines ([calibration](../CALIBRATION.md#corpus-variant-for-flix-078-and-later)) | [investigation](flix-0.78.0.md) |
 | 0.79.0 | `Flix0761Adapter` | no | yes | yes | yes | 2026-11-09: 9 targets / 1,349 findings; 8 complete JSON, cross-release baseline and SARIF comparisons; Prelude 232 lines ([snapshot](../CALIBRATION.md#flix-0790-calibration-snapshot-2026-11-09)) | [investigation](flix-0.79.0.md) |
+| 0.80.0 | `Flix0800Adapter` | yes | yes | yes | not run (SDK package check only) | not run | [investigation](flix-0.80.0.md) |
 
 Declaration positions: from 0.79.0 (not 0.78.0), the compiler starts a documented definition or
 effect at its `def`/`eff` line or annotation instead of its doc comment, and ends a definition at
@@ -41,6 +42,12 @@ its last token instead of its last trailing comment. `Flix0761Adapter` takes the
 from `Doc.loc` and the comments that directly follow the last token from the lexer for every
 release, so `line`, `lines` and the findings that depend on them match the 0.76.1 through 0.78.0
 values on 0.79.0 for the projects checked ([record](flix-0.79.0.md)).
+
+Flix 0.80.0 starts the `Flix0800Adapter` family. `FormatType` is gone (`Pretty.tpe(t).plain`
+renders a type) and `Lexer.lex` returns `SourceTokens` with an unchanged erased descriptor, which
+the ABI gate does not report ([record](flix-0.80.0.md)). Its packaged integration checkpoint,
+corpus and span comparison are not part of this repository and have not been run; the checkpoint
+follows with the flixw-metrics change that pins this SDK.
 
 ## What the test suite runs per release
 
@@ -64,6 +71,7 @@ semantic fixture, which runs against one jar per family, not against every relea
 | 0.77.0 | `Flix0761Adapter` | yes | `Flix0761AdapterTest` and `PluginIntegrationTest` (the 0.77.0 pin in `plugin/lib/flix.jar`) | yes | no | yes, the only compiler of the `calibration` workflow (`corpus.json`) |
 | 0.78.0 | `Flix0761Adapter` | yes | no | yes | yes | no; measured by hand on the `corpus-0.78.json` variant, which neither the suite nor CI measures (`test-calibration.sh` checks only its manifest and rewrite) |
 | 0.79.0 | `Flix0761Adapter` | yes | no | yes | yes | no automatic corpus run; complete manual 2026-11-09 snapshot on `corpus-0.78.json`, including eight cross-release JSON/baseline and SARIF checks ([evidence](../CALIBRATION.md#flix-0790-calibration-snapshot-2026-11-09)) |
+| 0.80.0 | `Flix0800Adapter` | no | `Flix0800AdapterTest` (0.80.0) | no | no | no |
 
 The same script also requires 0.59.0 and 0.66.0 to be refused (not in the table: they are not
 supported). `test-flix-sample.sh` analyzes `plugin/test/fixtures/release-sample` (three files, four
@@ -88,7 +96,7 @@ definition and effect positions and the findings that depend on them, the span c
 0.76.1 through 0.79.0 only; older families are not compared. The
 "473 checks" in the 0.78.0 and 0.79.0 records come from a manual run with `plugin/lib/flix.jar`
 swapped; that run is not reproduced by the suite and was not repeated for this table. A Flix
-release newer than 0.79.0 is loaded if it links, with one stderr warning that it has no checkpoint
+release newer than 0.80.0 is loaded if it links, with one stderr warning that it has no checkpoint
 (see [COMPILER-SDK.md](../COMPILER-SDK.md#other-compilers)).
 
 The adapter-family suffix names its oldest compatible release. It never encodes an upper bound:
