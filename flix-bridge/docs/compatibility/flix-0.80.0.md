@@ -31,14 +31,15 @@
 `FormatType` (the class, `MODULE$`, `formatType` and three `formatType$default$N`). No adapter
 of an older family links. A new adapter is required.
 
-`Flix0800Adapter` differs from `Flix0761Adapter` by 9 added and 7 removed lines (`diff` of the two files): the `Pretty`
-import, the class name and its documentation line, three `FormatType.formatType` calls replaced by
-`Pretty.tpe(..).plain`, and the unpacking of `SourceTokens` in `lexSource` (a comment line and
-`val tokens = sourceTokens.tokens`). It has 226 references.
+`Flix0800Adapter` differs from `Flix0761Adapter` by 9 added and 7 removed lines (`diff` of the two
+files): the `Pretty` import, the class name and its documentation line, three
+`FormatType.formatType` calls replaced by `Pretty.tpe(..).plain`, and the unpacking of
+`SourceTokens` in `lexSource` (a comment line and `val tokens = sourceTokens.tokens`). It has 226
+references.
 
 Error behavior differs. In 0.79.0 `FormatType.formatType` caught every `Throwable` and returned
 `"ERR_UNABLE_TO_FORMAT_TYPE"` ([`FormatType.scala`](https://github.com/flix/flix/blob/v0.79.0/main/src/ca/uwaterloo/flix/language/fmt/FormatType.scala#L65-L66)).
-`Pretty.tpe` ([`Pretty.scala#L36`](https://github.com/flix/flix/blob/v0.80.0/main/src/ca/uwaterloo/flix/language/fmt/Pretty.scala#L36))
+`Pretty.tpe` ([`Pretty.scala#L36`](https://github.com/flix/flix/blob/v0.80.0/main/src/ca/uwaterloo/flix/language/fmt/Pretty.scala#L36-L37))
 catches nothing, so an `InternalCompilerException` from `DisplayType` would reach `measure`.
 `DisplayType` still throws `"unexpected Type.Apply"` for an application whose head is not a type
 constructor ([`DisplayType.scala#L735`](https://github.com/flix/flix/blob/v0.80.0/main/src/ca/uwaterloo/flix/language/fmt/DisplayType.scala#L735));

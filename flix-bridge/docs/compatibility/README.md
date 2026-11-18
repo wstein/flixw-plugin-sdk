@@ -107,12 +107,17 @@ plugin itself retains an independent SemVer because its reporting behavior evolv
 
 `scripts/test-compiler-compatibility.sh` enforces the current lower boundary with official release
 artifacts: 0.59.0 must fail the AST gate and 0.66.0 must fail compiler-runtime inspection, while
-every release in the table above must pass packaged integration. Intermediate releases may satisfy
-the structural gate, but remain unverified until they receive their own row and investigation.
+every release that has an integration checkpoint there (the "yes" rows of the Integration column)
+must pass it. The checkpoint is recorded, not required, for `versions.json`: a release without one
+is verified by the definition above and its Integration column says "not run". Intermediate
+releases may satisfy the structural gate, but remain unverified until they have their own row in
+`versions.json` and an investigation record.
 
 For a new release, copy [the template](template.md), complete every applicable check, add the
-release to `plugin/resources/dev/flixw/metrics/verified-flix-versions.txt` together with its `fetch`
-line and integration checkpoint in `scripts/test-compiler-compatibility.sh` (the script fails if
-they disagree), update this matrix, and link the record from the compiler-repin pull request. Keep measurement distributions
+release and, if needed, its family to `versions.json` (`scripts/check-layout.sh` compares the first
+table with it), update this matrix, and link the record from the compiler-repin pull request. The
+metrics repository keeps its own list (`plugin/resources/dev/flixw/metrics/verified-flix-versions.txt`)
+and the integration checkpoint with its `fetch` line in `scripts/test-compiler-compatibility.sh`;
+that script fails if the two disagree. Keep measurement distributions
 and threshold decisions in [`docs/CALIBRATION.md`](../CALIBRATION.md); this directory answers the
 different question of whether a compiler release can be loaded and interpreted correctly.
