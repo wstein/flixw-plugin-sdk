@@ -43,10 +43,12 @@ public final class VersionData {
 
     private final List<Family> families;
     private final List<Release> releases;
+    private final String pin;
 
-    private VersionData(List<Family> families, List<Release> releases) {
+    private VersionData(List<Family> families, List<Release> releases, String pin) {
         this.families = List.copyOf(families);
         this.releases = List.copyOf(releases);
+        this.pin = pin;
     }
 
     /** The data packaged with this bridge. */
@@ -59,7 +61,10 @@ public final class VersionData {
         }
     }
 
-    /** Parses and validates a document: schema 1, unique families and releases, resolvable references. */
+    /**
+     * Parses and validates a document: schema 1, unique families and releases, resolvable references,
+     * and an optional {@code pin} that names a verified release.
+     */
     public static VersionData parse(String document) {
         Map<String, Object> root = object(Json.parse(document), "document");
         if (!Long.valueOf(1).equals(root.get("schema"))) throw bad("unsupported schema");
@@ -100,7 +105,14 @@ public final class VersionData {
         for (Family family : families)
             if (!seen.contains(family.floor()) || !seen.contains(family.testVersion()))
                 throw bad("family " + family.id() + " names a release that is not listed");
-        return new VersionData(families, releases);
+        String pin = null;
+        if (root.containsKey("pin")) {
+            pin = version(root, "pin");
+            Release pinned = releases.stream().filter(r -> r.version().equals(root.get("pin"))).findFirst().orElse(null);
+            if (pinned == null || !pinned.status().equals("verified"))
+                throw bad("pin " + root.get("pin") + " is not a verified release");
+        }
+        return new VersionData(families, releases, pin);
     }
 
     /** Families, newest first: the order in which a linking adapter is preferred. */
@@ -111,6 +123,14 @@ public final class VersionData {
     /** All releases in the file, oldest first. */
     public List<Release> releases() {
         return releases;
+    }
+
+    /**
+     * The release a consumer keeps as its calibration and test compiler, or empty when the document
+     * names none. It is a field of its own: it does not depend on the order of the families.
+     */
+    public Optional<String> pin() {
+        return Optional.ofNullable(pin);
     }
 
     public Optional<Family> family(String id) {
