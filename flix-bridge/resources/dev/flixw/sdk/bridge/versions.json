@@ -1,5 +1,6 @@
 {
   "schema": 1,
+  "pin": "0.77.0",
   "families": [
     {"id": "flix0800", "adapter": "dev.flixw.sdk.bridge.adapter.Flix0800Adapter", "floor": "0.80.0", "testVersion": "0.80.0", "capabilities": ["metrics"]},
     {"id": "flix0761", "adapter": "dev.flixw.sdk.bridge.adapter.Flix0761Adapter", "floor": "0.76.1", "testVersion": "0.77.0", "capabilities": ["metrics"]},
