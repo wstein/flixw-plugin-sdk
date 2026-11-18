@@ -105,8 +105,9 @@ release newer than 0.80.0 is loaded if it links, with one stderr warning that it
 The `pin` field of `versions.json` names the release a consumer keeps as its calibration and test
 compiler (flixw-metrics: `plugin/lib/flix.jar`, currently 0.77.0). It is not derived from the family
 order: a new first family does not move it. It must be a verified release (`VersionDataTest`,
-`scripts/check-layout.sh`). A document without it stays readable; a consumer then falls back to the
-test release of its newest family. The pin only has to be verified in the sense above; the integration checkpoint and the calibration of
+`scripts/check-layout.sh`). `VersionData` reads it as optional, so a document without it stays
+readable and a consumer then falls back to the test release of its newest family; the packaged
+`versions.json` must have it, and `scripts/check-layout.sh` fails without it. The pin only has to be verified in the sense above; the integration checkpoint and the calibration of
 the pinned release (0.77.0 has both) are plugin evidence that flixw-metrics keeps. Moving the pin is
 an owner decision with its own calibration.
 
