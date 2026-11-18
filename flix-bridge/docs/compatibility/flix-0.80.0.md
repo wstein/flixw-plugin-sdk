@@ -77,8 +77,9 @@ characters (`Pretty.tpe(t).plain` against `FormatType.formatType(t)`), effect ty
 - Cache: the adapter family is a cache field (`adapterFamily=flix0800`), so entries of 0.80.0 and
   0.79.0 do not mix.
 - Pin: the new family is first in `versions.json`, and its only release is its `testVersion`.
-  `sdk-versions.sh pin` in flixw-metrics reads `families[0].testVersion` and names 0.80.0 after
-  this change.
+  The pin is the separate `pin` field (0.77.0), so a new first family does not move it.
+  `sdk-versions.sh pin` in flixw-metrics read `families[0].testVersion`; it has to read `pin`
+  before the metrics pin takes this SDK revision.
 - Follow-up work: flixw-metrics pin change with the packaged integration checkpoint, span
   comparison and corpus run for 0.80.0; a comparison of FlixDoc widths against 0.79.0; a gate
   check of generic signatures (see the pull request).
