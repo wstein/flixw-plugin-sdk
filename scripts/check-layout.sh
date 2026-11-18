@@ -39,6 +39,9 @@ jq -e '[.releases[].version] | (. == (map(split(".") | map(tonumber)) | sort_by(
   || fail "releases are not sorted oldest first"
 jq -e '[.releases[].sha256] | all(test("^[0-9a-f]{64}$")) and (unique | length) == length' "$data" >/dev/null \
   || fail "digests are malformed or repeated"
+# the pin is its own field and names a verified release; it does not depend on the family order.
+jq -e '.pin as $p | (.pin | type) == "string" and ([.releases[] | select(.status == "verified") | .version] | index($p)) != null' "$data" >/dev/null \
+  || fail "pin is missing or does not name a verified release"
 readme=flix-bridge/docs/compatibility/README.md
 # The release matrix: the first table lists exactly the releases of versions.json with their adapter classes.
 expected=$(jq -r '.releases[] | select(.status == "verified") | "| \(.version) | `Flix\(.family[4:])Adapter` |"' "$data")
@@ -47,4 +50,4 @@ actual=$(sed -n '/^| Flix | Adapter family | Source build/,/^$/p' "$readme" | gr
 for version in $(jq -r '.releases[] | select(.status == "verified") | .version' "$data"); do
   grep -q "^| $version | " "$readme" || fail "no matrix row for $version"
 done
-echo "check-layout: ok ($(jq '.families | length' "$data") families, $(jq '[.releases[] | select(.status == "verified")] | length' "$data") verified releases)"
+echo "check-layout: ok ($(jq '.families | length' "$data") families, pin $(jq -r .pin "$data"), $(jq '[.releases[] | select(.status == "verified")] | length' "$data") verified releases)"
