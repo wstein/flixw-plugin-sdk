@@ -128,9 +128,9 @@ public final class VersionDataTest {
             "a pin that names a verified release is read");
         rejectsWith(withPin(verified, "\"0.61.0\""), "pin 0.61.0 is not a verified release (not listed)",
             "pin names a release that is not listed");
-        rejects(withPin(verified, "\"0.6\""), "pin is not a version");
-        rejects(withPin(verified, "0"), "pin is not a string");
-        rejects(withPin(verified, "\"\""), "pin is empty");
+        rejectsWith(withPin(verified, "\"0.6\""), "bad version 0.6", "pin is not a version");
+        rejectsWith(withPin(verified, "0"), "missing pin", "pin is not a string");
+        rejectsWith(withPin(verified, "\"\""), "missing pin", "pin is empty");
         String rejected = "{\"version\": \"0.59.0\", \"sha256\": \"" + "1".repeat(64)
             + "\", \"status\": \"rejected\", \"rejection\": \"X\"}";
         rejects(withPin(verified, "\"0.59.0\"").replace("\"releases\": [", "\"releases\": [" + rejected + ", "),
