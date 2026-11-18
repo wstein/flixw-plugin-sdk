@@ -126,7 +126,8 @@ public final class VersionDataTest {
         require(VersionData.parse(minimal(verified)).pin().isEmpty(), "a document without a pin is read and has none");
         require(VersionData.parse(withPin(verified, "\"0.60.0\"")).pin().equals(Optional.of("0.60.0")),
             "a pin that names a verified release is read");
-        rejects(withPin(verified, "\"0.61.0\""), "pin names a release that is not listed");
+        rejectsWith(withPin(verified, "\"0.61.0\""), "pin 0.61.0 is not a verified release (not listed)",
+            "pin names a release that is not listed");
         rejects(withPin(verified, "\"0.6\""), "pin is not a version");
         rejects(withPin(verified, "0"), "pin is not a string");
         rejects(withPin(verified, "\"\""), "pin is empty");
@@ -134,6 +135,8 @@ public final class VersionDataTest {
             + "\", \"status\": \"rejected\", \"rejection\": \"X\"}";
         rejects(withPin(verified, "\"0.59.0\"").replace("\"releases\": [", "\"releases\": [" + rejected + ", "),
             "pin names a rejected release");
+        rejectsWith(withPin(verified, "\"0.59.0\"").replace("\"releases\": [", "\"releases\": [" + rejected + ", "),
+            "pin 0.59.0 is not a verified release (rejected)", "the message says that the pinned release is rejected");
         String newer = "{\"id\": \"g\", \"adapter\": \"a.C\", \"floor\": \"0.61.0\","
             + " \"testVersion\": \"0.61.0\", \"capabilities\": [\"metrics\"]}";
         String later = "{\"version\": \"0.61.0\", \"sha256\": \"" + "2".repeat(64)
@@ -158,6 +161,18 @@ public final class VersionDataTest {
 
     private static String withPin(String release, String pin) {
         return minimal(release).replace("{\"schema\": 1, ", "{\"schema\": 1, \"pin\": " + pin + ", ");
+    }
+
+    private static void rejectsWith(String document, String message, String reason) {
+        try {
+            VersionData.parse(document);
+        } catch (IllegalArgumentException e) {
+            if (!e.getMessage().contains(message))
+                throw new AssertionError(reason + ": message was " + e.getMessage());
+            passed++;
+            return;
+        }
+        throw new AssertionError("accepted: " + reason);
     }
 
     private static void rejects(String document, String reason) {
