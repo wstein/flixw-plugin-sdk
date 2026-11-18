@@ -31,7 +31,7 @@ for entry in dev/flixw/sdk/bridge/versions.json META-INF/LICENSE-flixw-plugin-sd
     dev/flixw/sdk/bridge/adapter/Flix0761Adapter.class; do
   printf '%s\n' "$contents" | grep -qx "$entry" || fail "flix-bridge.jar lacks $entry"
 done
-for adapter in 0600 0610 0661 0672 0680 0753 0761; do
+for adapter in 0600 0610 0661 0672 0680 0753 0761 0800; do
   printf '%s\n' "$contents" | grep -qx "dev/flixw/sdk/bridge/adapter/Flix${adapter}Adapter.class" \
     || fail "flix-bridge.jar lacks the Flix$adapter adapter"
 done
@@ -55,7 +55,7 @@ run() {
   project=$PWD/$out/project-$version  # absolute, as flixw passes it
   rm -rf "$project"; cp -R flix-bridge/test/fixtures/$2 "$project"
   case $version in
-    0.78.*|0.79.*) # these releases reject the package keys that older releases require
+    0.78.*|0.79.*|0.80.*) # these releases reject the package keys that older releases require
       grep -v -E '^(name|description|authors|license|modules)[[:space:]]*=' "$project/flix.toml" >"$project/flix.toml.new"
       mv "$project/flix.toml.new" "$project/flix.toml" ;;
   esac
@@ -75,16 +75,17 @@ expect 0.60.0 semantic-validation flix0600
 expect 0.68.0 semantic flix0680
 expect 0.76.0 semantic flix0753
 expect 0.79.0 semantic flix0761
+expect 0.80.0 semantic flix0800
 # An unverified release is measured but noticed once, with the plugin's name.
-cp "$lib/flix-0.77.0.jar" "$out/flix-0.80.0.jar"
-status=0; FLIXW_ABI_VERSION=1 FLIXW_PROJECT_ROOT=$PWD/$out/project-0.79.0 FLIXW_COMPILER_JAR=$PWD/$out/flix-0.80.0.jar \
-  FLIXW_COMPILER_VERSION=0.80.0 FLIXW_JAVA_HOME=$JAVA_HOME "$JAVA_HOME/bin/java" -jar "$out/example-plugin.jar" \
-  >"$out/0.80.0.out" 2>"$out/0.80.0.err" || status=$?
+cp "$lib/flix-0.77.0.jar" "$out/flix-0.81.0.jar"
+status=0; FLIXW_ABI_VERSION=1 FLIXW_PROJECT_ROOT=$PWD/$out/project-0.79.0 FLIXW_COMPILER_JAR=$PWD/$out/flix-0.81.0.jar \
+  FLIXW_COMPILER_VERSION=0.81.0 FLIXW_JAVA_HOME=$JAVA_HOME "$JAVA_HOME/bin/java" -jar "$out/example-plugin.jar" \
+  >"$out/0.81.0.out" 2>"$out/0.81.0.err" || status=$?
 [ "$status" = 0 ] || fail "an unlisted release was refused (exit $status)"
-grep -q 'example: warning: Flix 0.80.0 has no compatibility checkpoint' "$out/0.80.0.err" || fail "an unlisted release drew no warning"
+grep -q 'example: warning: Flix 0.81.0 has no compatibility checkpoint' "$out/0.81.0.err" || fail "an unlisted release drew no warning"
 for version in 0.59.0 0.66.0; do
   status=0; run "$version" semantic || status=$?
   [ "$status" = 2 ] || fail "rejected Flix $version exited $status, not 2"
   grep -q 'is not supported; missing' "$out/$version.err" || fail "rejected Flix $version was not explained"
 done
-echo 'check-package: ok (4 verified releases, 1 unlisted, 2 rejected; jars reproducible)'
+echo 'check-package: ok (5 verified releases, 1 unlisted, 2 rejected; jars reproducible)'

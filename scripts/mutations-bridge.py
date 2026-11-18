@@ -18,7 +18,7 @@ cases = [
     # (name, file, before, after, command, expected status, reason in output)
     ("verified-includes-rejected", B + "VersionData.java",
      'release.status().equals("verified"))\n            .map(Release::version)', 'true)\n            .map(Release::version)',
-     UNIT, 1, "fourteen verified releases"),
+     UNIT, 1, "fifteen verified releases"),
     ("duplicate-family", B + "VersionData.java",
      'if (!ids.add(family.id())) throw bad("duplicate family " + family.id());', 'ids.add(family.id());',
      UNIT, 1, "accepted: duplicate family"),
