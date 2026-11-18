@@ -12,11 +12,12 @@ The adapter binds to compiler internals that do not promise ABI or semantic stab
 directory records the evidence behind each supported Flix release. A passing linkage gate is
 necessary but not sufficient.
 
-**Verified** means two things for a release: the bytecode-derived gate accepts it, and a packaged
-integration checkpoint for it passes in `scripts/test-compiler-compatibility.sh`. Both are required
-for an entry in `plugin/resources/dev/flixw/metrics/verified-flix-versions.txt`. Evidence beyond
-that differs per release (source build, semantic fixture, span comparison, corpus) and is what the
-tables below record; a column that says "no" or "not rerun" is a gap, not a pass.
+**Verified** in `versions.json` means: the bytecode-derived gate accepts the release, the family's
+semantic fixture passes on it, and `scripts/check-package.sh` selects the family. The
+packaged-plugin integration checkpoint is plugin evidence; the Integration column records whether
+it ran. Evidence beyond that differs per release (source build, span comparison, corpus) and is
+what the tables below record; a column that says "no", "not run" or "not rerun" is a gap, not a
+pass.
 
 | Flix | Adapter family | Source build | ABI gate | Semantic fixture | Integration | Corpus | Record |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
@@ -45,9 +46,10 @@ values on 0.79.0 for the projects checked ([record](flix-0.79.0.md)).
 
 Flix 0.80.0 starts the `Flix0800Adapter` family. `FormatType` is gone (`Pretty.tpe(t).plain`
 renders a type) and `Lexer.lex` returns `SourceTokens` with an unchanged erased descriptor, which
-the ABI gate does not report ([record](flix-0.80.0.md)). Its packaged integration checkpoint,
-corpus and span comparison are not part of this repository and have not been run; the checkpoint
-follows with the flixw-metrics change that pins this SDK.
+the ABI gate does not report ([record](flix-0.80.0.md)). 0.80.0 is verified by the definition
+above. Its packaged integration checkpoint, corpus and span comparison have not been run (the
+Integration and Corpus columns say "not run"); the checkpoint follows with the flixw-metrics
+change that pins this SDK.
 
 ## What the test suite runs per release
 

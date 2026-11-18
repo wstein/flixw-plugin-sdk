@@ -31,10 +31,19 @@
 `FormatType` (the class, `MODULE$`, `formatType` and three `formatType$default$N`). No adapter
 of an older family links. A new adapter is required.
 
-`Flix0800Adapter` differs from `Flix0761Adapter` by 7 added and 6 removed lines: the `Pretty`
+`Flix0800Adapter` differs from `Flix0761Adapter` by 9 added and 7 removed lines (`diff` of the two files): the `Pretty`
 import, the class name and its documentation line, three `FormatType.formatType` calls replaced by
-`Pretty.tpe(..).plain`, and the unpacking of `SourceTokens` in `lexSource`. It has 226 references.
+`Pretty.tpe(..).plain`, and the unpacking of `SourceTokens` in `lexSource` (a comment line and
+`val tokens = sourceTokens.tokens`). It has 226 references.
 
+Error behavior differs. In 0.79.0 `FormatType.formatType` caught every `Throwable` and returned
+`"ERR_UNABLE_TO_FORMAT_TYPE"` ([`FormatType.scala`](https://github.com/flix/flix/blob/v0.79.0/main/src/ca/uwaterloo/flix/language/fmt/FormatType.scala#L65-L66)).
+`Pretty.tpe` ([`Pretty.scala#L36`](https://github.com/flix/flix/blob/v0.80.0/main/src/ca/uwaterloo/flix/language/fmt/Pretty.scala#L36))
+catches nothing, so an `InternalCompilerException` from `DisplayType` would reach `measure`.
+`DisplayType` still throws `"unexpected Type.Apply"` for an application whose head is not a type
+constructor ([`DisplayType.scala#L735`](https://github.com/flix/flix/blob/v0.80.0/main/src/ca/uwaterloo/flix/language/fmt/DisplayType.scala#L735));
+over-applied constructors go to `overApplied` and `Error` types to `DisplayType.Error` in the same
+match. Not verified: whether types of the typed AST can reach that throw; the fixture does not.
 Not visible to the ABI gate: the `Lexer.lex` result type. `Flix0761AdapterTest` on 0.80.0 ends with
 a `ClassCastException` (`SourceTokens` to `Token[]`) at the `Lexer.lex` call; the source does not
 compile against 0.80.0 either. The gate cannot see a changed type argument inside `Tuple2`, because
