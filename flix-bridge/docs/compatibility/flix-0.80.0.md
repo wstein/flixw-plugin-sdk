@@ -63,7 +63,7 @@ characters (`Pretty.tpe(t).plain` against `FormatType.formatType(t)`), effect ty
 | Bytecode-derived ABI gate | `AdapterAbi.missing` per family on 0.80.0 and on 0.79.0 | 0.80.0: `Flix0800Adapter` 0 of 226 missing, `Flix0761Adapter` 6 of 222, `Adapters.select()` = `flix0800`. 0.79.0: `Flix0800Adapter` 8 of 226 missing, `Flix0761Adapter` 0, `select()` = `flix0761` |
 | Semantic fixture | `Flix0800AdapterTest` on `semantic` with 0.80.0 | `ok`; the conformance run gives `defs=6 measurement=0d5322308d140a9b`, the digest of 0.76.1 through 0.79.0 |
 | Negative controls | `Flix0761AdapterTest` on 0.80.0; `Flix0800AdapterTest` on 0.79.0 | both fail |
-| Packaged integration | `scripts/check-package.sh`: example plugin on 0.80.0 | selects `flix0800`, 6 definitions, no warning. The metrics `test-compiler-compatibility.sh` checkpoint: not run |
+| Packaged integration | `scripts/check-package.sh`: example plugin on 0.80.0 | selects `flix0800`, 6 definitions, no warning. The metrics `test-compiler-compatibility.sh` checkpoint: not run; that script fails for a verified release without one, so the metrics pin change must add it |
 | Corpus calibration | not run | not run |
 | Performance contract | not run | not run |
 | Full test suite | `./mill --no-server flix-bridge.test.check` | see the pull request |
