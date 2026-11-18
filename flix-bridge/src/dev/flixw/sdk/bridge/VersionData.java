@@ -108,9 +108,10 @@ public final class VersionData {
         String pin = null;
         if (root.containsKey("pin")) {
             pin = version(root, "pin");
-            Release pinned = releases.stream().filter(r -> r.version().equals(root.get("pin"))).findFirst().orElse(null);
-            if (pinned == null || !pinned.status().equals("verified"))
-                throw bad("pin " + root.get("pin") + " is not a verified release");
+            String state = releases.stream().filter(r -> r.version().equals(root.get("pin"))).findFirst()
+                .map(Release::status).orElse("not listed");
+            if (!state.equals("verified"))
+                throw bad("pin " + root.get("pin") + " is not a verified release (" + state + ")");
         }
         return new VersionData(families, releases, pin);
     }
